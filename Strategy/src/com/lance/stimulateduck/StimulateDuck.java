@@ -1,9 +1,11 @@
-package com.java.lance.stimulateduck;
+package com.lance.stimulateduck;
 
-import com.java.lance.stimulateduck.duck.Duck;
-import com.java.lance.stimulateduck.duck.GreenHeadDuck;
-import com.java.lance.stimulateduck.duck.RedHeadDuck;
-import com.java.lance.stimulateduck.flybehavior.NoFlyBehavior;
+
+
+import com.lance.stimulateduck.duck.Duck;
+import com.lance.stimulateduck.duck.GreenHeadDuck;
+import com.lance.stimulateduck.duck.RedHeadDuck;
+import com.lance.stimulateduck.flybehavior.NoFlyBehavior;
 
 public class StimulateDuck {
     public static void main(String[] args) {

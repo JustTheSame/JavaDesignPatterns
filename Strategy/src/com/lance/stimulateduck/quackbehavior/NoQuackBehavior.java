@@ -1,4 +1,4 @@
-package com.java.lance.stimulateduck.quackbehavior;
+package com.lance.stimulateduck.quackbehavior;
 
 public class NoQuackBehavior implements QuackBehavior {
     @Override

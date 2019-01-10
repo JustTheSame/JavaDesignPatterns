@@ -1,7 +1,5 @@
 # 二十三种设计模式 - 策略模式
 
-[TOC]
-
 ## 策略模式原理
 
 在阎宏博士的《JAVA与模式》一书中开头是这样描述策略（Strategy）模式的：
@@ -270,8 +268,8 @@ public interface QuackBehavior {
 ```java
 package com.java.lance.stimulateduck.duck;
 
-import com.java.lance.stimulateduck.flybehavior.FlyBehavior;
-import com.java.lance.stimulateduck.quackbehavior.QuackBehavior;
+import FlyBehavior;
+import QuackBehavior;
 
 public abstract class Duck {
 
@@ -308,8 +306,8 @@ public abstract class Duck {
 ```java
 package com.java.lance.stimulateduck.duck;
 
-import com.java.lance.stimulateduck.flybehavior.GoodFlyBehavior;
-import com.java.lance.stimulateduck.quackbehavior.GaGaQuackBehavior;
+import GoodFlyBehavior;
+import GaGaQuackBehavior;
 
 public class GreenHeadDuck extends Duck {
 

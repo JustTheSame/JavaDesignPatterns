@@ -1,4 +1,4 @@
-package com.java.lance.stimulateduck.flybehavior;
+package com.lance.stimulateduck.flybehavior;
 
 public class NoFlyBehavior implements FlyBehavior {
     @Override

@@ -1,8 +1,7 @@
-package com.java.lance.stimulateduck.duck;
+package com.lance.stimulateduck.duck;
 
-import com.java.lance.stimulateduck.flybehavior.BadFlyBehavior;
-import com.java.lance.stimulateduck.quackbehavior.GaGaQuackBehavior;
-import com.java.lance.stimulateduck.quackbehavior.GuGuQuackBehavior;
+import com.lance.stimulateduck.flybehavior.BadFlyBehavior;
+import com.lance.stimulateduck.quackbehavior.GuGuQuackBehavior;
 
 public class RedHeadDuck extends Duck {
     public RedHeadDuck() {

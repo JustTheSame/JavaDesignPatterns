@@ -1,4 +1,4 @@
-package com.java.lance.stimulateduck.oo;
+package com.lance.stimulateduck.oo;
 
 public class RedHeadDuck extends Duck {
     @Override

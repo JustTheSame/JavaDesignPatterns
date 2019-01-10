@@ -1,7 +1,7 @@
-package com.java.lance.stimulateduck.duck;
+package com.lance.stimulateduck.duck;
 
-import com.java.lance.stimulateduck.flybehavior.FlyBehavior;
-import com.java.lance.stimulateduck.quackbehavior.QuackBehavior;
+import com.lance.stimulateduck.flybehavior.FlyBehavior;
+import com.lance.stimulateduck.quackbehavior.QuackBehavior;
 
 public abstract class Duck {
 
