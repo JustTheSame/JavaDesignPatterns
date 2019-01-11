@@ -1,20 +1,28 @@
 # 二十三种设计模式 - 策略模式
 
-## 策略模式原理
+## 策略模式简介
 
-在阎宏博士的《JAVA与模式》一书中开头是这样描述策略（Strategy）模式的：
+### 定义
 
-　　**策略模式属于对象的行为模式。其用意是针对一组算法，将每一个算法封装到具有共同接口的独立的类中，从而使得它们可以相互替换。策略模式使得算法可以在不影响到客户端的情况下发生变化。**
+策略模式：属于对象的行为模式。其用意是针对一组算法，将每一个算法封装到具有共同接口的独立的类中，从而使得它们可以相互替换。
 
-策略模式是对算法的包装，是把使用算法的责任和算法本身分割开来，委派给不同的对象管理。策略模式通常把一个系列的算法包装到一系列的策略类里面，作为一个抽象策略类的子类。用一句话来说，就是：“准备一组算法，并将每一个算法封装起来，使得它们可以互换”。下面就以一个示意性的实现讲解策略模式实例的结构。
+策略模式：使得算法可以在不影响到客户端的情况下发生变化。
 
-这个模式涉及到三个角色：
+策略模式：是对算法的包装，是把使用算法的责任和算法本身分割开来，委派给不同的对象管理。策略模式通常把一个系列的算法包装到一系列的策略类里面，作为一个抽象策略类的子类。用一句话来说，就是：“准备一组算法，并将每一个算法封装起来，使得它们可以互换”。
 
-- **环境(Context)角色：**持有一个Strategy的引用。
+## 策略模式结构
 
-- **抽象策略(Strategy)角色：**这是一个抽象角色，通常由一个接口或抽象类实现。此角色给出所有的具体策略类所需的接口。
+### 结构图
 
-- **具体策略(ConcreteStrategy)角色：**包装了相关的算法或行为。
+### 参与者
+
+策略模式参与者：
+
+Context：环境角色，持有一个Strategy的引用。
+
+Strategy：抽象策略角色，这是一个抽象角色，通常由一个接口或抽象类实现。此角色给出所有的具体策略类所需的接口。
+
+ConcreteStrategy：具体策略角色，包装了相关的算法或行为。
 
 ### 环境角色类
 
@@ -86,9 +94,505 @@ public class ConcreteStrategyC implements Strategy {
 }
 ```
 
-## 使用场景
+## 策略模式实现
 
-### 模拟鸭子项目
+### 收银软件项目
+
+现在需要给商场做收银软件，收银员根据客户购买产品的单价和数量，向客户打印小票。
+
+这个实现很简单，一个类就可以搞定了
+
+```java
+package com.lance.market.basic;
+
+import java.util.Scanner;
+
+public class Cash {
+    public String list = "";
+    public Double totalPrice = 0.00;
+
+    public void buttonOK() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("输入单价：");
+        String price = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入数量：");
+        String num = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入折扣：");
+        String discount = scanner.nextLine();
+
+        Double account = Double.parseDouble(price) * Integer.parseInt(num) * Double.parseDouble(discount) / 10;
+        list += "单价：" + price + "，数量：" + num + "，折扣：" + discount + "\n";
+        totalPrice += account;
+    }
+
+    public static void main(String[] args) {
+        Cash cash = new Cash();
+        boolean flag = true;
+        while (flag) {
+            cash.buttonOK();
+            if (cash.totalPrice > 10) {
+                flag = false;
+            }
+        }
+        System.out.println("=============");
+        System.out.println("清单：\n" + cash.list);
+        System.out.println("总价：" + cash.totalPrice);
+    }
+}
+```
+
+但是，用面向对象的角度思考，这个类将前端输入和业务逻辑混合在一块了，不利于维护，扩展，复用，也不灵活。
+
+假如，现在商场在做活动，所有商品打折，7折，过一段时间，商场又搞活动，所有商品5折，国庆节活动，所有商品满200减50。
+
+按照上面的方式写代码，那么每次都要写一遍，如何将其复用起来，并且每次增加新的活动的时候，又不会影响到原来的活动。
+
+其实我们刚才所说的简单工厂设计模式，也可应用在这里。
+
+首先，有一个工厂类，在这个工厂类里面，根据类型，依赖于不同的现金收费方式。
+
+先写一个抽象的现金收费方式类（可理解为Product）
+
+```java
+package com.lance.market.factory.product;
+
+public abstract class CashFee {
+    public abstract double acceptCash(double money);
+}
+```
+
+然后定义现金收费方式的实现类，分别是：正常收费，折扣类，返现类
+
+```java
+package com.lance.market.factory.product;
+
+public class NormalCashFee extends CashFee {
+    @Override
+    public double acceptCash(double money) {
+        return money;
+    }
+}
+```
+
+```java
+package com.lance.market.factory.product;
+
+public class DiscountCashFee extends CashFee {
+
+    private double discount = 0.00;
+
+
+    public DiscountCashFee(double discount) {
+        this.discount = discount / 10 ;
+    }
+
+    @Override
+    public double acceptCash(double money) {
+        return this.discount * money;
+    }
+
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+}
+```
+
+```java
+package com.lance.market.factory.product;
+
+public class ReturnCashFee extends CashFee {
+
+    private double baseCash;
+
+    private double returnCash;
+
+    public ReturnCashFee(double baseCash, double returnCash) {
+        this.baseCash = baseCash;
+        this.returnCash = returnCash;
+    }
+
+    public double getBaseCash() {
+        return baseCash;
+    }
+
+    public void setBaseCash(double baseCash) {
+        this.baseCash = baseCash;
+    }
+
+    public double getReturnCash() {
+        return returnCash;
+    }
+
+    public void setReturnCash(double returnCash) {
+        this.returnCash = returnCash;
+    }
+
+    @Override
+    public double acceptCash(double money) {
+        return money - Math.floor(money / baseCash) * returnCash;
+    }
+}
+```
+
+再定义一个工厂类，用来生产各种各样的现金收费方式
+
+```java
+package com.lance.market.factory;
+
+import com.lance.market.factory.product.CashFee;
+import com.lance.market.factory.product.DiscountCashFee;
+import com.lance.market.factory.product.NormalCashFee;
+import com.lance.market.factory.product.ReturnCashFee;
+
+import java.util.Scanner;
+
+public class CashFeeFactory {
+    public static CashFee createCashFee(int type, double discount, double basePrice, double returnPrice) {
+        CashFee cashFee = null;
+        switch (type) {
+            case 1:
+                cashFee = new NormalCashFee();
+                break;
+            case 2:
+                cashFee = new DiscountCashFee(discount);
+                break;
+            case 3:
+                cashFee = new ReturnCashFee(basePrice, returnPrice);
+                break;
+        }
+
+        return cashFee;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("输入单价：");
+        String price = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入数量：");
+        String num = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入折扣类型（1 无折扣 2 打折 3 满减）：");
+        String type = scanner.nextLine();
+
+        double discount = 0.0d;
+        double basePrice = 0;
+        double returnPrice = 0;
+        if ("2".equals(type)) {
+            scanner = new Scanner(System.in);
+            System.out.println("输入折扣：");
+            discount = Double.parseDouble(scanner.nextLine());
+        }
+
+        if ("3".equals(type)) {
+            scanner = new Scanner(System.in);
+            System.out.println("基础金额：");
+            basePrice = Double.parseDouble(scanner.nextLine());
+            scanner = new Scanner(System.in);
+            System.out.println("返还现金：");
+            returnPrice = Double.parseDouble(scanner.nextLine());
+        }
+
+        Double money = Double.parseDouble(price) * Integer.parseInt(num);
+        CashFee cashFee = CashFeeFactory.createCashFee(Integer.parseInt(type), discount, basePrice, returnPrice);
+        System.out.println("总价：" + cashFee.acceptCash(money));
+    }
+}
+```
+
+#### 思考：
+
+使用简单工厂设计模式的优缺点：
+
+优点：
+
+1. 业务逻辑和前端展示相互分离开了。业务逻辑的修改，不影响前端代码展示。
+2. 每一个业务逻辑单独一个类，修改或者添加一个类，不会影响到其他的类。
+3. 使用工厂类封装了业务逻辑类，前端不需要知道到底每种业务怎么实现，只需要知道他的父类即可。
+
+缺点：
+
+1. 如果活动很频繁，经常会搞各种各样的活动，那么业务逻辑就会有很多种，每一次都要增加一个类。
+2. 每增加一个类都要修改工厂类，修改会很频繁。
+
+####  小结：
+
+简单工厂设计模式虽然也能解决这个问题，但这个模式只是解决对类的创建问题。
+
+由此我们应该使用**策略模式**对需求做修改。
+
+与简单工厂模式类似，我们都需要先定义一个现金算法的抽象类，以及现金算法的各个实现类。
+
+```java
+package com.lance.market.strategy;
+
+public abstract class CashFee {
+    public abstract double acceptCash(double money);
+}
+```
+
+```java
+package com.lance.market.factory.product;
+
+public class NormalCashFee extends CashFee {
+    @Override
+    public double acceptCash(double money) {
+        return money;
+    }
+}
+```
+
+```java
+package com.lance.market.factory.product;
+
+public class DiscountCashFee extends CashFee {
+
+    private double discount = 0.00;
+
+
+    public DiscountCashFee(double discount) {
+        this.discount = discount / 10 ;
+    }
+
+    @Override
+    public double acceptCash(double money) {
+        return this.discount * money;
+    }
+
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+}
+```
+
+```java
+package com.lance.market.factory.product;
+
+public class ReturnCashFee extends CashFee {
+
+    private double baseCash;
+
+    private double returnCash;
+
+    public ReturnCashFee(double baseCash, double returnCash) {
+        this.baseCash = baseCash;
+        this.returnCash = returnCash;
+    }
+
+    public double getBaseCash() {
+        return baseCash;
+    }
+
+    public void setBaseCash(double baseCash) {
+        this.baseCash = baseCash;
+    }
+
+    public double getReturnCash() {
+        return returnCash;
+    }
+
+    public void setReturnCash(double returnCash) {
+        this.returnCash = returnCash;
+    }
+
+    @Override
+    public double acceptCash(double money) {
+        return money - Math.floor(money / baseCash) * returnCash;
+    }
+}
+```
+
+最后，我们来创建上下文类
+
+```java
+package com.lance.market.strategy.context;
+
+import com.lance.market.factory.product.CashFee;
+import com.lance.market.factory.product.DiscountCashFee;
+import com.lance.market.factory.product.NormalCashFee;
+import com.lance.market.factory.product.ReturnCashFee;
+
+import java.util.Scanner;
+
+public class CashContext {
+
+    private CashFee cashFee;
+
+    public CashContext(CashFee cashFee) {
+        this.cashFee = cashFee;
+    }
+
+    public double getResult(double money) {
+        return cashFee.acceptCash(money);
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("输入单价：");
+        String price = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入数量：");
+        String num = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入折扣类型（1 无折扣 2 打折 3 满减）：");
+        String type = scanner.nextLine();
+
+        double discount = 0.0d;
+        double basePrice = 0;
+        double returnPrice = 0;
+        if ("2".equals(type)) {
+            scanner = new Scanner(System.in);
+            System.out.println("输入折扣：");
+            discount = Double.parseDouble(scanner.nextLine());
+        }
+
+        if ("3".equals(type)) {
+            scanner = new Scanner(System.in);
+            System.out.println("基础金额：");
+            basePrice = Double.parseDouble(scanner.nextLine());
+            scanner = new Scanner(System.in);
+            System.out.println("返还现金：");
+            returnPrice = Double.parseDouble(scanner.nextLine());
+        }
+
+        Double money = Double.parseDouble(price) * Integer.parseInt(num);
+
+        CashContext cashContext = null;
+        switch (type) {
+            case "1":
+                cashContext = new CashContext(new NormalCashFee());
+                break;
+            case "2":
+                cashContext = new CashContext(new DiscountCashFee(discount));
+                break;
+            case "3":
+                cashContext = new CashContext(new ReturnCashFee(basePrice, returnPrice));
+                break;
+        }
+
+        System.out.println("总价：" + cashContext.getResult(money));
+    }
+
+}
+```
+
+#### 思考：
+
+1. 业务逻辑和前端页面展示分开。
+2. 有一个context上下文类，在其内部引用了CashFee类，构造方法定义了具体的实现类。
+3. 但是这样操作客户端依然需要switch判断。
+
+这时我们可以将简单工厂模式和策略模式结合起来使用，并且其他的都不用变化，变化的是CashContext。
+
+```java
+package com.lance.market.strategy.context;
+
+import com.lance.market.factory.product.CashFee;
+import com.lance.market.factory.product.DiscountCashFee;
+import com.lance.market.factory.product.NormalCashFee;
+import com.lance.market.factory.product.ReturnCashFee;
+
+import java.util.Scanner;
+
+public class CashContext {
+
+    private CashFee cashFee;
+
+    public CashContext(int type, double discount, double basePrice, double returnPrice) {
+        switch (type) {
+            case 1:
+                this.cashFee = new NormalCashFee();
+                break;
+            case 2:
+                this.cashFee = new DiscountCashFee(discount);
+                break;
+            case 3:
+                this.cashFee = new ReturnCashFee(basePrice, returnPrice);
+                break;
+        }
+    }
+
+    public double getResult(double money) {
+        return cashFee.acceptCash(money);
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("输入单价：");
+        String price = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入数量：");
+        String num = scanner.nextLine();
+
+        scanner = new Scanner(System.in);
+        System.out.println("输入折扣类型（1 无折扣 2 打折 3 满减）：");
+        String type = scanner.nextLine();
+
+        double discount = 0.0d;
+        double basePrice = 0;
+        double returnPrice = 0;
+        if ("2".equals(type)) {
+            scanner = new Scanner(System.in);
+            System.out.println("输入折扣：");
+            discount = Double.parseDouble(scanner.nextLine());
+        }
+
+        if ("3".equals(type)) {
+            scanner = new Scanner(System.in);
+            System.out.println("基础金额：");
+            basePrice = Double.parseDouble(scanner.nextLine());
+            scanner = new Scanner(System.in);
+            System.out.println("返还现金：");
+            returnPrice = Double.parseDouble(scanner.nextLine());
+        }
+
+        Double money = Double.parseDouble(price) * Integer.parseInt(num);
+
+        CashContext cashContext = new CashContext(Integer.parseInt(type), discount, basePrice, returnPrice);
+
+
+        System.out.println("总价：" + cashContext.getResult(money));
+    }
+
+}
+```
+
+现在我们将前端的switch转移到了CashContext的内部，这样，前端只需要传递给我类别信息就可以了。
+
+下面来对比一下：简单工厂设计模式 和 策略模式+简单工厂模式的区别：
+
+```java
+CashFee cashFee = CashFeeFactory.createCashFee(Integer.parseInt(type), discount, basePrice, returnPrice);
+```
+
+```java
+ CashContext cashContext = new CashContext(Integer.parseInt(type), discount, basePrice, returnPrice);
+```
+
+对于客户端而言，简单工厂设计模式，客户端需要知道两个类，CashFee和CashFeeFactory；而简单工厂模式+策略模式，客户段只需要知道一个类CashContex即可，降低类耦合性。
+
+### 鸭子项目
+
+#### 模拟鸭子项目
 
 1. 从项目“模拟鸭子游戏”开始
 2. 从OO的角度设计这个项目，鸭子超类，扩展超类：
@@ -174,7 +678,7 @@ public class StimulateDuck {
 Process finished with exit code 0
 ```
 
-### 项目的新需求
+#### 项目的新需求
 
 1. 于此同时为了应对新的需求，看看这个设计的可扩展性
    - 添加会飞的鸭子
@@ -210,7 +714,7 @@ public abstract class Duck {
 
 **继承的问题：对类的局部改动，尤其超类的局部改动，会影响其他部分。影响会有溢出效应。**
 
-### 用OO原则解决新需求的不足
+#### 用OO原则解决新需求的不足
 
 1. 继续尝试用OO原理来解决，覆盖：
 
@@ -239,7 +743,7 @@ public class GreenHeadDuck extends Duck {
 
 2）鸭子哪些功能是会根据新需求变化的？叫声，飞行。。。
 
-### 用策略模式来解决新需求
+#### 用策略模式来解决新需求
 
 1. 接口：
 
@@ -261,7 +765,7 @@ public interface QuackBehavior {
 
 好处：新增行为简单，行为类更好的复用，组合更方便。既有继承带来的复用好处，没有挖坑。
 
-### 重新设计模拟鸭子项目
+#### 重新设计模拟鸭子项目
 
 1. 重新设计的鸭子项目：
 
@@ -299,7 +803,7 @@ public abstract class Duck {
 }
 ```
 
-### 总结策略模式定义
+#### 总结策略模式定义
 
 1. 绿头鸭，石头鸭：
 
@@ -355,7 +859,7 @@ public class GreenHeadDuck extends Duck {
 ## 策略模式的缺点
 
 1. 客户端必须知道所有的策略类，并自行决定使用哪一个策略类。这就意味着客户端必须理解这些算法的区别，以便适时选择恰当的算法类。换言之，策略模式只适用于客户端知道算法或行为的情况。
-   1. 由于策略模式把每个具体的策略实现都单独封装成为类，如果备选的策略很多的话，那么对象的数目就会很可观。
+2. 由于策略模式把每个具体的策略实现都单独封装成为类，如果备选的策略很多的话，那么对象的数目就会很可观。
 
 ## 策略模式注意点
 
